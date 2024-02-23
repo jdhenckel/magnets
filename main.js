@@ -169,7 +169,12 @@ class World {
         this.canvas = document.getElementById('magnet-canvas');
         this.ctx = this.canvas.getContext('2d');
         this.balls = [];
-        this.gsensor = new GravitySensor();
+        this.gravity = new Vec2();
+        let sensor = new GravitySensor({ frequency: 10 });
+        sensor.addEventListener('reading',() => {
+            let g = 9.8;
+            this.gravity.set(-g*sensor.x, g*sensor.y);
+        });
     }
 
     resize() {
@@ -188,11 +193,11 @@ class World {
     }
 
     step(dt) {
-        let g = this.gravity();
+        print('gravity ' + this.gravity);
         for (let b of this.balls) {
             b.move(dt);
             b.hitWalls(this.w,this.h);
-            b.force.incr(g);
+            b.force.incr(this.gravity);
         }
         for (let i=0; i<this.balls.length; ++i)
             for (let j=i+1; j<this.balls.length; ++j) {
@@ -200,12 +205,6 @@ class World {
                 this.balls[i].attract(this.balls[j]);
             }
         this.draw();
-    }
-
-    gravity() {
-        let r = new Vec2(-(this.gsensor.x || 0), this.gsensor.y || 0).scale(9.8);
-        print('gravity ' + r);
-        return r;
     }
 }
 
