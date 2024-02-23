@@ -170,11 +170,6 @@ class World {
         this.ctx = this.canvas.getContext('2d');
         this.balls = [];
         this.gravity = new Vec2();
-        let sensor = new GravitySensor({ frequency: 10 });
-        sensor.addEventListener('reading',() => {
-            let g = 9.8;
-            this.gravity.set(-g*sensor.x, g*sensor.y);
-        });
     }
 
     resize() {
@@ -190,6 +185,12 @@ class World {
         for (let b of this.balls) {
             b.draw(this.ctx, this.scale);
         }
+    }
+
+    addBall(r) {
+        let x = (this.w - 2*r) * Math.random() + r;
+        let y = (this.h - 2*r) * Math.random() + r;
+        this.balls.push(new Ball(r,x,y));
     }
 
     step(dt) {
@@ -220,9 +221,9 @@ function startSimulation() {
     let r = 3;
     w.balls.push(new Ball(r,20,20,0,0,0,50));//,-25,-15))
     w.balls.push(new Ball(r,10,20,0));//,10,0))
-    for (let i=0; i<5; ++i) w.balls.push(new Ball(r,30,i*10+16))
-    for (let i=0; i<5; ++i) w.balls.push(new Ball(r,40,i*10+16))
-    for (let i=0; i<5; ++i) w.balls.push(new Ball(r,50,i*10+16))
+    //for (let i=0; i<5; ++i) w.balls.push(new Ball(r,30,i*10+16))
+    // for (let i=0; i<5; ++i) w.balls.push(new Ball(r,40,i*10+16))
+    // for (let i=0; i<5; ++i) w.balls.push(new Ball(r,50,i*10+16))
 
     let framesPerStep = 3;
     let frameCounter = -1;
@@ -242,9 +243,9 @@ function startSimulation() {
     return w;
 }
 
+
 // Draw balls on page load
 addEventListener('resize', () => {
-    console.log('resize');
     if (window.hasOwnProperty('world'))
         window.world.resize();
     return true;
@@ -256,3 +257,13 @@ addEventListener('load', () => {
     window.world = startSimulation();
     return true;
 });
+
+addEventListener('deviceorientation', (event) => {
+    if (window.hasOwnProperty('world')) {
+        let g = 29.8;
+        let x = g * Math.sin(event.gamma * Math.PI / 180);
+        let y = g * Math.sin(event.beta * Math.PI / 180);
+        window.world.gravity.set(x,y);
+    }
+    return true;
+}, true);
